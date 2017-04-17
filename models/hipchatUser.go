@@ -26,3 +26,22 @@ type HipchatUserPresence struct {
 	Status string `json:"status"`
 	Show   string `json:"show"`
 }
+
+//HipchatError is a response from hipchat that returns an error.
+type HipchatError struct {
+	Error *HipchatErrorBody `json:"error"`
+}
+
+//NewHipchatError returns a new instance of HipchatError.
+func NewHipchatError() *HipchatError {
+	return &HipchatError{
+		Error: new(HipchatErrorBody),
+	}
+}
+
+//HipchatErrorBody is the main body of the error response.
+type HipchatErrorBody struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Type    string `json:"type"`
+}

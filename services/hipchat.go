@@ -25,13 +25,14 @@ type Hipchat struct {
 }
 
 //NewHipchat returns a new instance of Hipchat.
-func NewHipchat(host string, accessToken string) *Hipchat {
+func NewHipchat(host string, accessToken string) (*Hipchat, error) {
 	client := new(http.Client)
-	return &Hipchat{
+	hc := &Hipchat{
 		host:   host,
 		token:  accessToken,
 		client: client,
 	}
+	return hc, hc.valid()
 }
 
 //UpdateStatus will update the status of the user to the status specified.
@@ -64,7 +65,12 @@ func (h *Hipchat) UpdateStatus(uid string, status busybee.Status) error {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusNoContent {
-		return errors.New("Could not update the status of the user")
+		errModel := models.NewHipchatError()
+		err = json.NewDecoder(res.Body).Decode(errModel)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("Could not update the status of the user: Code: %d Message: %s", errModel.Error.Code, errModel.Error.Message)
 	}
 	return nil
 }
@@ -81,11 +87,40 @@ func (h *Hipchat) GetUser(uid string) (*models.HipchatUser, error) {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("Could not get the user")
+		errModel := models.NewHipchatError()
+		err = json.NewDecoder(res.Body).Decode(errModel)
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("Could not get the user: Code: %d Message: %s", errModel.Error.Code, errModel.Error.Message)
 	}
 	user := models.NewHipchatUser()
 	err = json.NewDecoder(res.Body).Decode(user)
 	return user, err
+}
+
+func (h *Hipchat) valid() error {
+	req, err := h.NewRequest(http.MethodGet, "/v2/user", nil)
+	if err != nil {
+		return err
+	}
+	q := req.URL.Query()
+	q.Set("auth_test", "true")
+	req.URL.RawQuery = q.Encode()
+	res, err := h.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusAccepted {
+		errModel := models.NewHipchatError()
+		err = json.NewDecoder(res.Body).Decode(errModel)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("Hipchat did not accept this client: Code: %d Message: %s", errModel.Error.Code, errModel.Error.Message)
+	}
+	return nil
 }
 
 //NewRequest creates a new request with the appropriate headers to make a hipchat call.
