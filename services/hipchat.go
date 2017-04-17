@@ -48,6 +48,7 @@ func (h *Hipchat) UpdateStatus(uid string, status busybee.Status) error {
 		return nil
 	}
 	user.Presence.Show = strStatus
+	user.ID = 0 //Need to omit ID from body in update
 	body := new(bytes.Buffer)
 	err = json.NewEncoder(body).Encode(user)
 	if err != nil {

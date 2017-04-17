@@ -2,6 +2,7 @@ package models
 
 //HipchatUser is a user in hipchat.
 type HipchatUser struct {
+	ID          int                  `json:"id,omitempty"`
 	Name        string               `json:"name"`
 	MentionName string               `json:"mention_name"`
 	Presence    *HipchatUserPresence `json:"presence"`
