@@ -1,5 +1,10 @@
-//Package exchange is used as a calendarService in BusyBee.
-//It is not recommended to use this package outside of BusyBee.
+/*Package exchange is used as a CalendarService in BusyBee.
+
+It is not recommended to use this package outside of BusyBee.
+To use with BusyBee make sure to import this package.
+You can do so by adding the following:
+	import _ "github.com/dixonwille/busybee/exchange"
+*/
 package exchange
 
 import (
@@ -16,7 +21,12 @@ import (
 	"errors"
 
 	ntlmssp "github.com/Azure/go-ntlmssp"
+	"github.com/dixonwille/busybee"
 )
+
+func init() {
+	busybee.RegisterCalendarService("exchange", New)
+}
 
 //Exchange is of type CalendarService and is used to communicate with an Exchange server.
 type Exchange struct {
@@ -26,8 +36,26 @@ type Exchange struct {
 	client   *http.Client
 }
 
-//NewExchange creates a new instance to connect to the Exchange server with.
-func NewExchange(host, username, password string) *Exchange {
+//New creates a new Exchange Calendar service for BusyBee for consumption.
+//conf holds information on how to create the new instance.
+//Keys that must exist are as follows:
+//
+//* host - holds the host for the exchange service
+//* user - username to sign in to exchange with
+//* pass - password for the username to sign in to exchange
+func New(conf map[string]string) (busybee.CalendarService, error) {
+	host, ok := conf["host"]
+	if !ok || host == "" {
+		return nil, errors.New("host is required to create an Exchange Calendar Service")
+	}
+	user, ok := conf["user"]
+	if !ok || user == "" {
+		return nil, errors.New("user is required to create an Exchange Calendar Service")
+	}
+	pass, ok := conf["pass"]
+	if !ok || pass == "" {
+		return nil, errors.New("pass is required to create an Exchange Calendar Service")
+	}
 	client := &http.Client{
 		Transport: ntlmssp.Negotiator{
 			RoundTripper: &http.Transport{},
@@ -35,10 +63,10 @@ func NewExchange(host, username, password string) *Exchange {
 	}
 	return &Exchange{
 		host:     host,
-		username: username,
-		password: password,
+		username: user,
+		password: pass,
 		client:   client,
-	}
+	}, nil
 }
 
 //InEvent returns whether the specified uid is in an event or not.

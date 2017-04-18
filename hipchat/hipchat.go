@@ -1,5 +1,10 @@
-//Package hipchat is used for implementing a statusService in BusyBee.
-//It is not recommended to use this package outside of BusyBee.
+/*Package hipchat is used for implementing a StatusService in BusyBee.
+
+It is not recommended to use this package outside of BusyBee.
+To use with BusyBee make sure to import this package.
+You can do so by adding the following:
+	import _ "github.com/dixonwille/busybee/hipchat"
+*/
 package hipchat
 
 import (
@@ -16,6 +21,10 @@ import (
 	"github.com/dixonwille/busybee"
 )
 
+func init() {
+	busybee.RegisterStatusService("hipchat", New)
+}
+
 //Hipchat is of type StatusService that can be used to get and update the status of a user.
 type Hipchat struct {
 	host   string
@@ -23,12 +32,20 @@ type Hipchat struct {
 	client *http.Client
 }
 
-//NewHipchat returns a new instance of Hipchat.
-func NewHipchat(host string, accessToken string) (*Hipchat, error) {
+//New returns a new instance of Hipchat.
+func New(conf map[string]string) (busybee.StatusService, error) {
+	host, ok := conf["host"]
+	if !ok || host == "" {
+		return nil, errors.New("host is required to create a Hipchat Status Service")
+	}
+	token, ok := conf["token"]
+	if !ok || token == "" {
+		return nil, errors.New("token is required to create a Hipchat Status Service")
+	}
 	client := new(http.Client)
 	hc := &Hipchat{
 		host:   host,
-		token:  accessToken,
+		token:  token,
 		client: client,
 	}
 	return hc, hc.valid()
