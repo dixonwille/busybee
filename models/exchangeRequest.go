@@ -8,12 +8,13 @@ import (
 )
 
 const (
+	//DateTimeFormat is the format used for request and responses from the server.
+	DateTimeFormat = "2006-01-02T15:04:05"
 	xsi            = "http://www.w3.org/2001/XMLSchema-instance"
 	xsd            = "http://www.w3.org/2001/XMLSchema"
 	soap           = "http://schemas.xmlsoap.org/soap/envelope/"
 	xmlnsTypes     = "http://schemas.microsoft.com/exchange/services/2006/types"
 	xmlnsMessages  = "http://schemas.microsoft.com/exchange/services/2006/messages"
-	dateTimeFormat = "2006-01-02T15:04:05"
 	timeFormat     = "15:04:05"
 )
 
@@ -144,8 +145,8 @@ type FreeBusyViewOptions struct {
 
 func newFreeBusyViewOptions(startTime, endTime time.Time) FreeBusyViewOptions {
 	return FreeBusyViewOptions{
-		StartTime: startTime.Format(dateTimeFormat),
-		EndTime:   endTime.Format(dateTimeFormat),
+		StartTime: startTime.Format(DateTimeFormat),
+		EndTime:   endTime.Format(DateTimeFormat),
 		MergedFreeBusyIntervalInMinutes: 30,
 		RequestedView:                   "FreeBusy",
 	}
