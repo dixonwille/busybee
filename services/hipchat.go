@@ -9,8 +9,6 @@ import (
 
 	"net/url"
 
-	"encoding/json"
-
 	"bytes"
 
 	"github.com/dixonwille/busybee"
@@ -51,11 +49,11 @@ func (h *Hipchat) UpdateStatus(uid string, status busybee.Status) error {
 	user.Presence.Show = strStatus
 	user.ID = 0 //Need to omit ID from body in update
 	body := new(bytes.Buffer)
-	err = json.NewEncoder(body).Encode(user)
+	err = user.Encode(body)
 	if err != nil {
 		return err
 	}
-	req, err := h.NewRequest(http.MethodPut, fmt.Sprintf("/v2/user/%s", uid), body)
+	req, err := h.newRequest(http.MethodPut, fmt.Sprintf("/v2/user/%s", uid), body)
 	if err != nil {
 		return err
 	}
@@ -66,7 +64,7 @@ func (h *Hipchat) UpdateStatus(uid string, status busybee.Status) error {
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusNoContent {
 		errModel := models.NewHipchatError()
-		err = json.NewDecoder(res.Body).Decode(errModel)
+		err = errModel.Decode(res.Body)
 		if err != nil {
 			return err
 		}
@@ -77,7 +75,7 @@ func (h *Hipchat) UpdateStatus(uid string, status busybee.Status) error {
 
 //GetUser gets the hipchat user with uid.
 func (h *Hipchat) GetUser(uid string) (*models.HipchatUser, error) {
-	req, err := h.NewRequest(http.MethodGet, fmt.Sprintf("/v2/user/%s", uid), nil)
+	req, err := h.newRequest(http.MethodGet, fmt.Sprintf("/v2/user/%s", uid), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -88,19 +86,19 @@ func (h *Hipchat) GetUser(uid string) (*models.HipchatUser, error) {
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
 		errModel := models.NewHipchatError()
-		err = json.NewDecoder(res.Body).Decode(errModel)
+		err = errModel.Decode(res.Body)
 		if err != nil {
 			return nil, err
 		}
 		return nil, fmt.Errorf("Could not get the user: Code: %d Message: %s", errModel.Error.Code, errModel.Error.Message)
 	}
 	user := models.NewHipchatUser()
-	err = json.NewDecoder(res.Body).Decode(user)
+	err = user.Decode(res.Body)
 	return user, err
 }
 
 func (h *Hipchat) valid() error {
-	req, err := h.NewRequest(http.MethodGet, "/v2/user", nil)
+	req, err := h.newRequest(http.MethodGet, "/v2/user", nil)
 	if err != nil {
 		return err
 	}
@@ -114,7 +112,7 @@ func (h *Hipchat) valid() error {
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusAccepted {
 		errModel := models.NewHipchatError()
-		err = json.NewDecoder(res.Body).Decode(errModel)
+		err = errModel.Decode(res.Body)
 		if err != nil {
 			return err
 		}
@@ -123,8 +121,8 @@ func (h *Hipchat) valid() error {
 	return nil
 }
 
-//NewRequest creates a new request with the appropriate headers to make a hipchat call.
-func (h *Hipchat) NewRequest(method, path string, body io.Reader) (*http.Request, error) {
+//newRequest creates a new request with the appropriate headers to make a hipchat call.
+func (h *Hipchat) newRequest(method, path string, body io.Reader) (*http.Request, error) {
 	u, err := url.Parse(h.host)
 	if err != nil {
 		return nil, err

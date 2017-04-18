@@ -1,5 +1,10 @@
 package models
 
+import (
+	"encoding/json"
+	"io"
+)
+
 //HipchatUser is a user in hipchat.
 type HipchatUser struct {
 	ID          int                  `json:"id,omitempty"`
@@ -20,6 +25,16 @@ func NewHipchatUser() *HipchatUser {
 	}
 }
 
+//Encode takes the model and writes it to writer.
+func (hu *HipchatUser) Encode(writer io.Writer) error {
+	return json.NewEncoder(writer).Encode(hu)
+}
+
+//Decode reads from reader and updates the model with the data.
+func (hu *HipchatUser) Decode(reader io.Reader) error {
+	return json.NewDecoder(reader).Decode(hu)
+}
+
 //HipchatUserPresence is part of the body in a hipchat user.
 //This states whether the user is busy or not "show" and a reason "status".
 type HipchatUserPresence struct {
@@ -37,6 +52,11 @@ func NewHipchatError() *HipchatError {
 	return &HipchatError{
 		Error: new(HipchatErrorBody),
 	}
+}
+
+//Decode reads from reader and updates the model with the data.
+func (he *HipchatError) Decode(reader io.Reader) error {
+	return json.NewDecoder(reader).Decode(he)
 }
 
 //HipchatErrorBody is the main body of the error response.

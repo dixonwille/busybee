@@ -3,6 +3,7 @@ package services
 import (
 	"io"
 	"net/http"
+	"net/url"
 
 	ntlmssp "github.com/Azure/go-ntlmssp"
 )
@@ -35,12 +36,18 @@ func (e *Exchange) InEvent(uid string) (bool, error) {
 	return false, nil
 }
 
-//NewRequest creates a new request with the appropriate headers to communicate with Exchange.
-func (e *Exchange) NewRequest(method, urlStr string, body io.Reader) (*http.Request, error) {
-	req, err := http.NewRequest(method, urlStr, body)
+//newRequest creates a new request with the appropriate headers to communicate with Exchange.
+func (e *Exchange) newRequest(method, path string, body io.Reader) (*http.Request, error) {
+	u, err := url.Parse(e.host)
+	if err != nil {
+		return nil, err
+	}
+	u.Path = path
+	req, err := http.NewRequest(method, u.String(), body)
 	if err != nil {
 		return nil, err
 	}
 	req.SetBasicAuth(e.username, e.password)
+	req.Header.Set("Content-Type", "text/xml; charset=utf-8")
 	return req, err
 }
