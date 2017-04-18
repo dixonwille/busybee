@@ -1,4 +1,6 @@
-package services
+//Package exchange is used as a calendarService in BusyBee.
+//It is not recommended to use this package outside of BusyBee.
+package exchange
 
 import (
 	"io"
@@ -14,7 +16,6 @@ import (
 	"errors"
 
 	ntlmssp "github.com/Azure/go-ntlmssp"
-	"github.com/dixonwille/busybee/models"
 )
 
 //Exchange is of type CalendarService and is used to communicate with an Exchange server.
@@ -43,7 +44,7 @@ func NewExchange(host, username, password string) *Exchange {
 //InEvent returns whether the specified uid is in an event or not.
 func (e *Exchange) InEvent(uid string) (bool, error) {
 	now := time.Now()
-	req := models.NewRequestEnvelope(now, now.AddDate(0, 0, 1), uid)
+	req := NewRequestEnvelope(now, now.AddDate(0, 0, 1), uid)
 	reqBuff := new(bytes.Buffer)
 	err := req.Encode(reqBuff)
 	if err != nil {
@@ -61,7 +62,7 @@ func (e *Exchange) InEvent(uid string) (bool, error) {
 	if res.StatusCode != http.StatusOK {
 		return false, fmt.Errorf("Could not see if user was busy: Code: %d Status: %s", res.StatusCode, res.Status)
 	}
-	response := new(models.ResponseEnvelope)
+	response := new(ResponseEnvelope)
 	err = response.Decode(res.Body)
 	if err != nil {
 		return false, err
@@ -71,11 +72,11 @@ func (e *Exchange) InEvent(uid string) (bool, error) {
 	}
 	for _, event := range response.FreeBusyResponses[0].CalendarEvents {
 		n := time.Now() //Want to be as close as possable to the current time
-		start, err := time.ParseInLocation(models.DateTimeFormat, event.StartTime, time.Local)
+		start, err := time.ParseInLocation(DateTimeFormat, event.StartTime, time.Local)
 		if err != nil {
 			return false, err
 		}
-		end, err := time.ParseInLocation(models.DateTimeFormat, event.EndTime, time.Local)
+		end, err := time.ParseInLocation(DateTimeFormat, event.EndTime, time.Local)
 		if err != nil {
 			return false, err
 		}

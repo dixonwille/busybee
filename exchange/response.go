@@ -1,4 +1,4 @@
-package models
+package exchange
 
 import "encoding/xml"
 import "io"

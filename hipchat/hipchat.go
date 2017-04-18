@@ -1,4 +1,6 @@
-package services
+//Package hipchat is used for implementing a statusService in BusyBee.
+//It is not recommended to use this package outside of BusyBee.
+package hipchat
 
 import (
 	"errors"
@@ -12,7 +14,6 @@ import (
 	"bytes"
 
 	"github.com/dixonwille/busybee"
-	"github.com/dixonwille/busybee/models"
 )
 
 //Hipchat is of type StatusService that can be used to get and update the status of a user.
@@ -63,7 +64,7 @@ func (h *Hipchat) UpdateStatus(uid string, status busybee.Status) error {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusNoContent {
-		errModel := models.NewHipchatError()
+		errModel := NewError()
 		err = errModel.Decode(res.Body)
 		if err != nil {
 			return err
@@ -74,7 +75,7 @@ func (h *Hipchat) UpdateStatus(uid string, status busybee.Status) error {
 }
 
 //GetUser gets the hipchat user with uid.
-func (h *Hipchat) GetUser(uid string) (*models.HipchatUser, error) {
+func (h *Hipchat) GetUser(uid string) (*User, error) {
 	req, err := h.newRequest(http.MethodGet, fmt.Sprintf("/v2/user/%s", uid), nil)
 	if err != nil {
 		return nil, err
@@ -85,14 +86,14 @@ func (h *Hipchat) GetUser(uid string) (*models.HipchatUser, error) {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		errModel := models.NewHipchatError()
+		errModel := NewError()
 		err = errModel.Decode(res.Body)
 		if err != nil {
 			return nil, err
 		}
 		return nil, fmt.Errorf("Could not get the user: Code: %d Message: %s", errModel.Error.Code, errModel.Error.Message)
 	}
-	user := models.NewHipchatUser()
+	user := NewUser()
 	err = user.Decode(res.Body)
 	return user, err
 }
@@ -111,7 +112,7 @@ func (h *Hipchat) valid() error {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusAccepted {
-		errModel := models.NewHipchatError()
+		errModel := NewError()
 		err = errModel.Decode(res.Body)
 		if err != nil {
 			return err
