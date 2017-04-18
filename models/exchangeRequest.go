@@ -19,12 +19,12 @@ const (
 
 //RequestEnvelope is the main structure of our exchange soap request.
 type RequestEnvelope struct {
-	XMLName xml.Name `xml:"soap:Envelope"`
-	Xsi     string   `xml:"xmlns:xsi,attr"`
-	Xsd     string   `xml:"xmlns:xsd,attr"`
-	Soap    string   `xml:"xmlns:soap,attr"`
-	T       string   `xml:"xmlns:t,attr"`
-	Body    *RequestBody
+	XMLName                    xml.Name                   `xml:"soap:Envelope"`
+	Xsi                        string                     `xml:"xmlns:xsi,attr"`
+	Xsd                        string                     `xml:"xmlns:xsd,attr"`
+	Soap                       string                     `xml:"xmlns:soap,attr"`
+	T                          string                     `xml:"xmlns:t,attr"`
+	GetUserAvailabilityRequest GetUserAvailabilityRequest `xml:"soap:Body>GetUserAvailabilityRequest"`
 }
 
 //NewRequestEnvelope creates the entire request for us.
@@ -36,34 +36,21 @@ func NewRequestEnvelope(startTime, endTime time.Time, addresses ...string) *Requ
 		Xsd:  xsd,
 		Soap: soap,
 		T:    xmlnsTypes,
-		Body: newRequestBody(startTime, endTime, addresses...),
-	}
-}
-
-//RequestBody is the body of the soap request.
-type RequestBody struct {
-	XMLName                    xml.Name `xml:"soap:Body"`
-	GetUserAvailabilityRequest *GetUserAvailabilityRequest
-}
-
-func newRequestBody(startTime, endTime time.Time, addresses ...string) *RequestBody {
-	return &RequestBody{
 		GetUserAvailabilityRequest: newGetUserAvailabilityRequest(startTime, endTime, addresses...),
 	}
 }
 
 //GetUserAvailabilityRequest is the soap request we want to make.
 type GetUserAvailabilityRequest struct {
-	XMLName             xml.Name `xml:"GetUserAvailabilityRequest"`
-	Xmlns               string   `xml:"xmlns,attr"`
-	T                   string   `xml:"xmlns:t,attr"`
-	TimeZone            *TimeZone
-	MailboxDataArray    *MailboxDataArray
-	FreeBusyViewOptions *FreeBusyViewOptions
+	Xmlns               string              `xml:"xmlns,attr"`
+	T                   string              `xml:"xmlns:t,attr"`
+	TimeZone            TimeZone            `xml:"t:TimeZone"`
+	MailboxDataArray    MailboxDataArray    `xml:"MailboxDataArray"`
+	FreeBusyViewOptions FreeBusyViewOptions `xml:"t:FreeBusyViewOptions"`
 }
 
-func newGetUserAvailabilityRequest(startTime, endTime time.Time, addresses ...string) *GetUserAvailabilityRequest {
-	return &GetUserAvailabilityRequest{
+func newGetUserAvailabilityRequest(startTime, endTime time.Time, addresses ...string) GetUserAvailabilityRequest {
+	return GetUserAvailabilityRequest{
 		Xmlns:               xmlnsMessages,
 		T:                   xmlnsTypes,
 		TimeZone:            newTimeZone(),
@@ -74,14 +61,13 @@ func newGetUserAvailabilityRequest(startTime, endTime time.Time, addresses ...st
 
 //TimeZone is used to tell the server information about our timezone.
 type TimeZone struct {
-	XMLName      xml.Name `xml:"t:TimeZone"`
-	Xmlns        string   `xml:"xmlns,attr"`
-	Bias         int      `xml:"Bias"`
-	StandardTime *StandardTime
-	DaylightTime *DaylightTime
+	Xmlns        string       `xml:"xmlns,attr"`
+	Bias         int          `xml:"Bias"`
+	StandardTime TimeZoneTime `xml:"StandardTime"`
+	DaylightTime TimeZoneTime `xml:"DaylightTime"`
 }
 
-func newTimeZone() *TimeZone {
+func newTimeZone() TimeZone {
 	now := time.Now()
 	std := time.Date(now.Year(), time.November, nthSunday(now.Year(), time.November, 1), 2, 0, 0, 0, time.Local)
 	day := time.Date(now.Year(), time.March, nthSunday(now.Year(), time.March, 2), 2, 0, 0, 0, time.Local)
@@ -90,28 +76,12 @@ func newTimeZone() *TimeZone {
 	if now.After(day) && now.Before(std) {
 		offset = offset - (time.Duration(60) * time.Minute)
 	}
-	return &TimeZone{
-		Xmlns: xmlnsTypes,
-		Bias:  -1 * int(math.Ceil(offset.Minutes())),
-		StandardTime: &StandardTime{
-			TimeZoneTime: newTimeZoneTime(0, 1, int(std.Month()), std, time.Sunday.String()),
-		},
-		DaylightTime: &DaylightTime{
-			TimeZoneTime: newTimeZoneTime(-60, 2, int(day.Month()), day, time.Sunday.String()),
-		},
+	return TimeZone{
+		Xmlns:        xmlnsTypes,
+		Bias:         -1 * int(math.Ceil(offset.Minutes())),
+		StandardTime: newTimeZoneTime(0, 1, int(std.Month()), std, time.Sunday.String()),
+		DaylightTime: newTimeZoneTime(-60, 2, int(day.Month()), day, time.Sunday.String()),
 	}
-}
-
-//StandardTime is information specific to standard time.
-type StandardTime struct {
-	XMLName xml.Name `xml:"StandardTime"`
-	*TimeZoneTime
-}
-
-//DaylightTime is information specific to daylight savings time.
-type DaylightTime struct {
-	XMLName xml.Name `xml:"DaylightTime"`
-	*TimeZoneTime
 }
 
 //TimeZoneTime is shared structure for StandardTime and DaylightTime.
@@ -123,8 +93,8 @@ type TimeZoneTime struct {
 	DayOfWeek string `xml:"DayOfWeek"`
 }
 
-func newTimeZoneTime(offsetMinutes, dayOrder, month int, when time.Time, dayOfWeek string) *TimeZoneTime {
-	return &TimeZoneTime{
+func newTimeZoneTime(offsetMinutes, dayOrder, month int, when time.Time, dayOfWeek string) TimeZoneTime {
+	return TimeZoneTime{
 		Bias:      offsetMinutes,
 		Time:      when.Format(timeFormat),
 		DayOrder:  dayOrder,
@@ -135,32 +105,30 @@ func newTimeZoneTime(offsetMinutes, dayOrder, month int, when time.Time, dayOfWe
 
 //MailboxDataArray is the overall structure for each individual email address.
 type MailboxDataArray struct {
-	XMLName     xml.Name `xml:"MailboxDataArray"`
-	MailboxData []*MailboxData
+	MailboxData []MailboxData `xml:"t:MailboxData"`
 }
 
-func newMailboxDataArray(addresses ...string) *MailboxDataArray {
+func newMailboxDataArray(addresses ...string) MailboxDataArray {
 	mda := new(MailboxDataArray)
 	for _, address := range addresses {
 		mda.MailboxData = append(mda.MailboxData, newMailboxData(address))
 	}
-	return mda
+	return *mda
 }
 
 //MailboxData is a single entry in MailboxDataArray.
 //It holds information like which user you want to look up.
 type MailboxData struct {
-	XMLName          xml.Name `xml:"t:MailboxData"`
-	Address          string   `xml:"t:Email>t:Address"`
-	AttendeeType     string   `xml:"t:AttendeeType"`
-	ExcludeConflicts bool     `xml:"t:ExcludeConflicts"`
+	Address          string `xml:"t:Email>t:Address"`
+	AttendeeType     string `xml:"t:AttendeeType"`
+	ExcludeConflicts bool   `xml:"t:ExcludeConflicts"`
 }
 
-func newMailboxData(address string) *MailboxData {
-	return &MailboxData{
-		Address:      address,
-		AttendeeType: "Required",
-		//ExcludeConflicts: false,
+func newMailboxData(address string) MailboxData {
+	return MailboxData{
+		Address:          address,
+		AttendeeType:     "Required",
+		ExcludeConflicts: false,
 	}
 }
 
@@ -168,15 +136,14 @@ func newMailboxData(address string) *MailboxData {
 //I only care if there is something going on now and if you are busy for it.
 //So I return the minimum required.
 type FreeBusyViewOptions struct {
-	XMLName                         xml.Name `xml:"t:FreeBusyViewOptions"`
-	StartTime                       string   `xml:"t:TimeWindow>t:StartTime"`
-	EndTime                         string   `xml:"t:TimeWindow>t:EndTime"`
-	MergedFreeBusyIntervalInMinutes int      `xml:"t:MergedFreeBusyIntervalInMinutes"`
-	RequestedView                   string   `xml:"t:RequestedView"`
+	StartTime                       string `xml:"t:TimeWindow>t:StartTime"`
+	EndTime                         string `xml:"t:TimeWindow>t:EndTime"`
+	MergedFreeBusyIntervalInMinutes int    `xml:"t:MergedFreeBusyIntervalInMinutes"`
+	RequestedView                   string `xml:"t:RequestedView"`
 }
 
-func newFreeBusyViewOptions(startTime, endTime time.Time) *FreeBusyViewOptions {
-	return &FreeBusyViewOptions{
+func newFreeBusyViewOptions(startTime, endTime time.Time) FreeBusyViewOptions {
+	return FreeBusyViewOptions{
 		StartTime: startTime.Format(dateTimeFormat),
 		EndTime:   endTime.Format(dateTimeFormat),
 		MergedFreeBusyIntervalInMinutes: 30,
