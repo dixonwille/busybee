@@ -1,9 +1,14 @@
 #!/bin/sh
+
 BBPATH="$PWD/BusyBee"
 while [ ! -f $BBPATH ]
 do
 read -p "Location of BusyBee (FullPath): " BBPATH
 done
+
+# if crontab -l | grep -q "$BBPATH"; then
+#     exit
+# fi
 
 while [ -z "$EXHOST" ]
 do
@@ -41,8 +46,13 @@ do
 read -p "HipChat Token( $HCHOST/account/api ): " HCTOKEN
 done
 
-ARGS="-exHost '$EXHOST' -exUser '$EXUSER' -exPass '$EXPASS' -exUID '$EXEMAIL' -hcHost '$HCHOST' -hcToken '$HCTOKEN' -hcUID '$HCMENTION'"
+ARGS="-exHost \"$EXHOST\" -exUser \"$EXUSER\" -exPass \"$EXPASS\" -exUID \"$EXEMAIL\" -hcHost \"$HCHOST\" -hcToken \"$HCTOKEN\" -hcUID \"$HCMENTION\""
 
-if ! crontab -l | grep -q "$BBPATH"; then
-   (crontab -l 2>/dev/null; echo "*/5 * * * * $BBPATH $ARGS") | crontab -
+eval "$BBPATH $ARGS"
+
+if [ $? -gt 0 ]; then
+    echo "Passed in Arguments did not allow BusyBee to execute properly. Please run install again."
+    exit
 fi
+
+(crontab -l 2>/dev/null; echo "*/5 * * * * $BBPATH $ARGS") | crontab -
