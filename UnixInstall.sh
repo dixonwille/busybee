@@ -6,9 +6,9 @@ do
 read -p "Location of BusyBee (FullPath): " BBPATH
 done
 
-# if crontab -l | grep -q "$BBPATH"; then
-#     exit
-# fi
+if crontab -l | grep -q "$BBPATH"; then
+    exit
+fi
 
 while [ -z "$EXHOST" ]
 do
