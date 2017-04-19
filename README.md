@@ -12,7 +12,17 @@ Go to the [Latest Release](https://github.com/dixonwille/busybee/releases/latest
 
 Once everything is downloaded it is recommended to move both the files somewhere they will be out of the way. A good location may be `%HOME%/BusyBee/` and put them in that folder. 
 
-Once files are moved, run the install script for your machine (`UnixInstall.sh` or `WindowsInstall.ps1`). It will prompt you to answer a few questions.
+Once files are moved, if you are on a Unix box (Mac or Linux) we need to make the files executable.
+
+```bash
+cd ~/BusyBee #Assuming this is where you moved your files too
+chmod +x UnixInstall.sh
+chmod +x WindowsInstall.ps1
+```
+
+> If you are on a Mac and try to double click the files you will get a warning. To bypass, navigate to this file in `Finder`, Control-Click the file, then from the shortcut menu, select `Open`. It will warn you one more time but with a different option now. Click `Open` again.
+
+Now run the install script for your machine (`UnixInstall.sh` or `WindowsInstall.ps1`). It will prompt you to answer a few questions.
 
 > `Exchange UserName` is not your email address. It is the AD Auth username you use to sign in Exchange.
 
