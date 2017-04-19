@@ -36,6 +36,22 @@ type Exchange struct {
 	client   *http.Client
 }
 
+//Conf holds all the needed information to create a new exchange service.
+type Conf struct {
+	Host string
+	User string
+	Pass string
+}
+
+//NewConf creates a new Exchange configuration using the passed in values.
+func NewConf(host, user, pass string) *Conf {
+	return &Conf{
+		Host: host,
+		User: user,
+		Pass: pass,
+	}
+}
+
 //New creates a new Exchange Calendar service for BusyBee for consumption.
 //conf holds information on how to create the new instance.
 //Keys that must exist are as follows:
@@ -43,18 +59,19 @@ type Exchange struct {
 //* host - holds the host for the exchange service
 //* user - username to sign in to exchange with
 //* pass - password for the username to sign in to exchange
-func New(conf map[string]string) (busybee.CalendarService, error) {
-	host, ok := conf["host"]
-	if !ok || host == "" {
-		return nil, errors.New("host is required to create an Exchange Calendar Service")
+func New(conf interface{}) (busybee.CalendarService, error) {
+	exConf, ok := conf.(*Conf)
+	if !ok {
+		return nil, errors.New("Must use an ExchangeConf struct")
 	}
-	user, ok := conf["user"]
-	if !ok || user == "" {
-		return nil, errors.New("user is required to create an Exchange Calendar Service")
+	if exConf.Host == "" {
+		return nil, errors.New("Host is required to create an Exchange Calendar Service")
 	}
-	pass, ok := conf["pass"]
-	if !ok || pass == "" {
-		return nil, errors.New("pass is required to create an Exchange Calendar Service")
+	if exConf.User == "" {
+		return nil, errors.New("User is required to create an Exchange Calendar Service")
+	}
+	if exConf.Pass == "" {
+		return nil, errors.New("Pass is required to create an Exchange Calendar Service")
 	}
 	client := &http.Client{
 		Transport: ntlmssp.Negotiator{
@@ -62,9 +79,9 @@ func New(conf map[string]string) (busybee.CalendarService, error) {
 		},
 	}
 	return &Exchange{
-		host:     host,
-		username: user,
-		password: pass,
+		host:     exConf.Host,
+		username: exConf.User,
+		password: exConf.Pass,
 		client:   client,
 	}, nil
 }

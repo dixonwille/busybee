@@ -32,20 +32,36 @@ type Hipchat struct {
 	client *http.Client
 }
 
-//New returns a new instance of Hipchat.
-func New(conf map[string]string) (busybee.StatusService, error) {
-	host, ok := conf["host"]
-	if !ok || host == "" {
-		return nil, errors.New("host is required to create a Hipchat Status Service")
+//Conf holds all the needed information to create a new hipchat service.
+type Conf struct {
+	Host  string
+	Token string
+}
+
+//NewConf creates a new Hipchat configuration using the passed in values.
+func NewConf(host, token string) *Conf {
+	return &Conf{
+		Host:  host,
+		Token: token,
 	}
-	token, ok := conf["token"]
-	if !ok || token == "" {
-		return nil, errors.New("token is required to create a Hipchat Status Service")
+}
+
+//New returns a new instance of Hipchat.
+func New(conf interface{}) (busybee.StatusService, error) {
+	hcConf, ok := conf.(*Conf)
+	if !ok {
+		return nil, errors.New("Must use a HipchatConf struct")
+	}
+	if hcConf.Host == "" {
+		return nil, errors.New("Host is required to create a Hipchat Status Service")
+	}
+	if hcConf.Token == "" {
+		return nil, errors.New("Token is required to create a Hipchat Status Service")
 	}
 	client := new(http.Client)
 	hc := &Hipchat{
-		host:   host,
-		token:  token,
+		host:   hcConf.Host,
+		token:  hcConf.Token,
 		client: client,
 	}
 	return hc, hc.valid()

@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/dixonwille/busybee"
-	_ "github.com/dixonwille/busybee/exchange"
-	_ "github.com/dixonwille/busybee/hipchat"
+	"github.com/dixonwille/busybee/exchange"
+	"github.com/dixonwille/busybee/hipchat"
 )
 
 var (
@@ -46,20 +46,13 @@ func init() {
 }
 
 func main() {
-	calSerConf := make(map[string]string)
-	calSerConf["service"] = "exchange"
-	calSerConf["host"] = cleanHost(exHost)
-	calSerConf["user"] = exUser
-	calSerConf["pass"] = exPass
-	staSerConf := make(map[string]string)
-	staSerConf["service"] = "hipchat"
-	staSerConf["host"] = cleanHost(hcHost)
-	staSerConf["token"] = hcToken
-	calendar, err := busybee.CreateCalendarService(calSerConf)
+	exConf := exchange.NewConf(cleanHost(exHost), exUser, exPass)
+	hcConf := hipchat.NewConf(cleanHost(hcHost), hcToken)
+	calendar, err := busybee.CreateCalendarService("exchange", exConf)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	status, err := busybee.CreateStatusService(staSerConf)
+	status, err := busybee.CreateStatusService("hipchat", hcConf)
 	if err != nil {
 		log.Fatalln(err)
 	}

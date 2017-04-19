@@ -30,7 +30,7 @@ type UserStatus interface {
 }
 
 //StatusServiceFactory is a function that will create a new instance of a StatusService.
-type StatusServiceFactory func(map[string]string) (StatusService, error)
+type StatusServiceFactory func(interface{}) (StatusService, error)
 
 //RegisterStatusService registers a StatusService instance with BusyBee
 func RegisterStatusService(name string, factory StatusServiceFactory) error {
@@ -49,17 +49,13 @@ func RegisterStatusService(name string, factory StatusServiceFactory) error {
 
 //CreateStatusService creates a new status service instance based on the supplied configuration values.
 //service must be supplied in conf so that it knows which registered service you want an instance of.
-func CreateStatusService(conf map[string]string) (StatusService, error) {
+func CreateStatusService(name string, conf interface{}) (StatusService, error) {
 	if conf == nil {
 		return nil, errors.New("Must supply a map for configuration values")
 	}
-	service, ok := conf["service"]
+	status, ok := statusServiceFactories[name]
 	if !ok {
-		return nil, errors.New("Must supply a service you want to create")
-	}
-	status, ok := statusServiceFactories[service]
-	if !ok {
-		return nil, fmt.Errorf("Could not find %s in the list of registered status services", service)
+		return nil, fmt.Errorf("Could not find %s in the list of registered status services", name)
 	}
 	return status(conf)
 }

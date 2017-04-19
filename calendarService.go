@@ -18,7 +18,7 @@ type UserCalendar interface {
 }
 
 //CalendarServiceFactory is a function that will create a new instance of a CalendarService.
-type CalendarServiceFactory func(map[string]string) (CalendarService, error)
+type CalendarServiceFactory func(interface{}) (CalendarService, error)
 
 //RegisterCalendarService registers a CalendarService instance with BusyBee
 func RegisterCalendarService(name string, factory CalendarServiceFactory) error {
@@ -37,17 +37,13 @@ func RegisterCalendarService(name string, factory CalendarServiceFactory) error 
 
 //CreateCalendarService creates a new calendar instance based on the supplied configuration values.
 //service must be supplied in conf so that it knows which registered service you want an instance of.
-func CreateCalendarService(conf map[string]string) (CalendarService, error) {
+func CreateCalendarService(name string, conf interface{}) (CalendarService, error) {
 	if conf == nil {
 		return nil, errors.New("Must supply a map for configuration values")
 	}
-	service, ok := conf["service"]
+	calendar, ok := calendarServiceFactories[name]
 	if !ok {
-		return nil, errors.New("Must supply a service you want to create")
-	}
-	calendar, ok := calendarServiceFactories[service]
-	if !ok {
-		return nil, fmt.Errorf("Could not find %s in the list of registered calendar services", service)
+		return nil, fmt.Errorf("Could not find %s in the list of registered calendar services", name)
 	}
 	return calendar(conf)
 }
