@@ -1,9 +1,5 @@
 $User = $(whoami)
 $TaskName = 'BusyBee'
-if (Get-ScheduledTask -TaskName $TaskName -ErrorAction 'Ignore') {
-    exit
-}
-
 $BBPath = "$PSScriptRoot/BusyBee.exe"
 while(!(Test-Path $BBPath)){
     $BBPath = Read-Host -Prompt 'Location of BusyBee.exe (FullPath)'
@@ -46,6 +42,10 @@ $Test = (Start-Process -FilePath $BBPath -ArgumentList ($Args -split ' ') -Windo
 if($Test.ExitCode -gt 0){
     Write-Error 'Passed in Arguments did not allow BusyBee to execute properly. Please run install again.'
     exit
+}
+
+if (Get-ScheduledTask -TaskName $TaskName -ErrorAction 'Ignore') {
+    Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
 }
 
 $Action = New-ScheduledTaskAction -Execute $BBPath -Argument $Args

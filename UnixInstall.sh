@@ -6,10 +6,6 @@ do
 read -p "Location of BusyBee (FullPath): " BBPATH
 done
 
-if crontab -l | grep -q "$BBPATH"; then
-    exit
-fi
-
 while [ -z "$EXHOST" ]
 do
 read -p "Exchange Host: " EXHOST
@@ -55,4 +51,7 @@ if [ $? -gt 0 ]; then
     exit
 fi
 
+if crontab -l | grep -q "$BBPATH"; then
+    crontab -l | grep -v "$BBPATH" | crontab -
+fi
 (crontab -l 2>/dev/null; echo "*/5 * * * * $BBPATH $ARGS") | crontab -
