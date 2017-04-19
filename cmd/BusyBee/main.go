@@ -63,7 +63,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	user := busybee.NewUser(exUID, hcUID, status, calendar)
+	user := busybee.NewUser(exUID, cleanMention(hcUID), status, calendar)
 	inEvent, err := user.InEvent()
 	if err != nil {
 		log.Fatalln(err)
@@ -85,4 +85,12 @@ func cleanHost(host string) string {
 		return host
 	}
 	return "https://" + host
+}
+
+func cleanMention(mention string) string {
+	mentionRunes := []rune(mention)
+	if mention[0] != '@' {
+		mentionRunes = append([]rune{rune('@')}, mentionRunes...)
+	}
+	return string(mentionRunes)
 }

@@ -33,7 +33,7 @@ done
 
 while [ -z "$HCMENTION" ]
 do
-read -p "HipChat Mention: " HCMENTION
+read -p "HipChat Mention: @" HCMENTION
 done
 
 while [ -z "$HCTOKEN" ]
