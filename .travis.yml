@@ -1,0 +1,15 @@
+language: go
+go:
+  - master
+install:
+  - "make"
+deploy:
+  provider: releases
+  api_key:
+    secure: sbzsDAfPeEb8CYF8nBEayYRU55Vz60aAd5KNaUPYrBDEwzlwh8mra8A/u/Ty3EC7ykp8LorOo/i+ug6TtmxZK6TjjMupS2fANJuPhPcEbVb/nhmWE4U4W4LJ9myZ8ZmVqJYlg8ira3NMGCTlL2pMxI79L0OsSWBImURCgpYEpWlVwueuue/byNwSg7yvxzT4wdsjGQVdlIaHM0pcXEIUjMJWalcn/QmfXuy4w0POaZq4qkaCjGixcszAx8HoGuVniTsVG3YDCT60TXCO3N+KB0ypB5Zl791J4vDuvE2Pqr4qxPP/PExFXf+V6t5m8vz5FpFVuQ9/Hp9xPn/IKYZJ8jTjTInnVpbLRVAYFnRM1KMVZYgD0jsdW0AgxYLYKy9odyLOYnYEJ56/eRNfkX7F5UDgcu+lH7JK913Yehd4JRoRWJEnGhvp29kGDEtVTTbwf2JdtBmtjMAIrCUPHdK5/zpCAkcaLgHcfseT+PQP0OlpWbfIZX/+aT4rzCf2BDl0MUXIuu8fLWpF8acRffkA74wXQDCc+ZIgHKgFbuMU7o4UnN3Yspy49twAfUB9qsACr6iZXjq5zfEnzwpGJKyWXCZ+wY8TmSU+pfBYOOKmKjuyPNIBriXUEpU22jWSKnDt/w1wYERNQNJvtkroi0H5eH6tti/6CLMToOeEBWaHovY=
+  file_glob: true
+  file: dist/*
+  skip_cleanup: true
+  on:
+    repo: dixonwille/busybee
+    tags: true
