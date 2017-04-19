@@ -4,6 +4,7 @@ It is not recommended to use this package outside of BusyBee.
 To use with BusyBee make sure to import this package.
 You can do so by adding the following:
 	import _ "github.com/dixonwille/busybee/hipchat"
+But since you will need the Configuration Struct it may just be easier to use it like normal.
 */
 package hipchat
 
