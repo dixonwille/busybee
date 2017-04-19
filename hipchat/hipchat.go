@@ -68,20 +68,32 @@ func New(conf interface{}) (busybee.StatusService, error) {
 }
 
 //UpdateStatus will update the status of the user to the status specified.
+//Will not update if the user is already on specified status.
+//Updates the show if in meeting to DnD always.
+//Updates the show if DnD to Available but never Away to Available.
+//Updates the Status message to "In a meeting (BusyBee)" if changing to DnD.
+//Updates the Status message to "I'm free (BusyBee)" if changing to Available.
 func (h *Hipchat) UpdateStatus(uid string, status busybee.Status) error {
 	if status == busybee.StatusUnknown {
 		return errors.New("Cannot update status of user to unkown")
 	}
-	strStatus := convertStatus(status)
 	user, err := h.GetUser(uid)
 	if err != nil {
 		return err
 	}
-	if strings.ToLower(user.Presence.Show) == strStatus {
+	strStatus := convertStatus(status)
+	curStatus := strings.ToLower(user.Presence.Show)
+	switch {
+	case curStatus == strStatus:
+	case curStatus == "away" && status == busybee.StatusAvailable:
 		return nil
+	case status == busybee.StatusBusy:
+		user.Presence.Status = "In a meeting (BusyBee)"
+	case status == busybee.StatusAvailable:
+		user.Presence.Status = "I'm free (BusyBee)"
 	}
-	user.Presence.Show = strStatus
 	user.ID = 0 //Need to omit ID from body in update
+	user.Presence.Show = strStatus
 	body := new(bytes.Buffer)
 	err = user.Encode(body)
 	if err != nil {
