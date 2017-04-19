@@ -1,7 +1,9 @@
 language: go
 go:
-  - master
+  - 1.8.x
 install:
+  - "go get -d -v ./..."
+script:
   - "make"
 deploy:
   provider: releases
