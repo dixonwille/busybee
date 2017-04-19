@@ -1,4 +1,6 @@
-# BusyBee
+# BusyBee 
+
+[![GitHub release](https://img.shields.io/github/release/dixonwille/busybee.svg)](https://github.com/dixonwille/busybee/releases/latest) [![Build Status](https://travis-ci.org/dixonwille/busybee.svg?branch=master)](https://travis-ci.org/dixonwille/busybee) [![GoDoc](https://godoc.org/github.com/dixonwille/busybee?status.svg)](https://godoc.org/github.com/dixonwille/busybee)
 
 A bot (or server depending on how far this goes) that will update hipchat status based on exchange calendar. It is being built in a way that it should be able to update any Chatting services status with any calendars events (using interfaces).
 
