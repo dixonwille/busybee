@@ -1,6 +1,13 @@
 #!/bin/sh
 
-BBPATH="$PWD/BusyBee"
+BBPATH="$PWD/BusyBee_"
+
+if [ -f "${BBPATH}linux" ]; then
+$BBPATH = "${BBPATH}linux"
+elif [ -f "${BBPATH}mac" ]; then
+$BBPATH = "${BBPATH}mac"
+fi
+
 while [ ! -f $BBPATH ]
 do
 read -p "Location of BusyBee (FullPath): " BBPATH

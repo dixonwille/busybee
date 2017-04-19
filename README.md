@@ -8,7 +8,7 @@ Go to [Account API Access](https://www.hipchat.com/account/api) to grab a token 
 
 ## Install
 
-Go to the [Latest Release](https://github.com/dixonwille/busybee/releases/latest) and download `BusyBee` or `BusyBee.exe` depending on if you are on a Unix or Windows machine respectivley. Also download the appropriate install script for your machine as well. This install script will setup you machine to run BusyBee every 5 minutes.
+Go to the [Latest Release](https://github.com/dixonwille/busybee/releases/latest) and download `BusyBee_linux`, `BusyBee_mac` or `BusyBee.exe` depending on if you are on a Linux, Mac or Windows machine respectivley. Also download the appropriate install script for your machine as well. This install script will setup you machine to run BusyBee every 5 minutes.
 
 Once everything is downloaded it is recommended to move both the files somewhere they will be out of the way. A good location may be `%HOME%/BusyBee/` and put them in that folder. 
 
