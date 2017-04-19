@@ -3,9 +3,9 @@
 BBPATH="$PWD/BusyBee_"
 
 if [ -f "${BBPATH}linux" ]; then
-$BBPATH = "${BBPATH}linux"
+BBPATH="${BBPATH}linux"
 elif [ -f "${BBPATH}mac" ]; then
-$BBPATH = "${BBPATH}mac"
+BBPATH="${BBPATH}mac"
 fi
 
 while [ ! -f $BBPATH ]
