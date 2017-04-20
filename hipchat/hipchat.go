@@ -87,7 +87,7 @@ func (h *Hipchat) UpdateStatus(uid string, status busybee.Status) error {
 	switch {
 	case curStatus == strStatus:
 		fallthrough
-	case curStatus == "away" && status == busybee.StatusAvailable:
+	case (curStatus == "xa" || curStatus == "away") && status == busybee.StatusAvailable:
 		return nil
 	case status == busybee.StatusBusy:
 		user.Presence.Status = "In a meeting (BusyBee)"
