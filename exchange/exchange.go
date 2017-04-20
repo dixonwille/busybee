@@ -26,15 +26,10 @@ import (
 )
 
 func init() {
-	busybee.RegisterCalendarService("exchange", New)
-}
-
-//Exchange is of type CalendarService and is used to communicate with an Exchange server.
-type Exchange struct {
-	host     string
-	username string
-	password string
-	client   *http.Client
+	exchangeService := new(busybee.EventService)
+	exchangeService.Create = New
+	exchangeService.CreateConfig = NewConf
+	busybee.RegisterEventService("exchange", exchangeService)
 }
 
 //Conf holds all the needed information to create a new exchange service.
@@ -45,12 +40,16 @@ type Conf struct {
 }
 
 //NewConf creates a new Exchange configuration using the passed in values.
-func NewConf(host, user, pass string) *Conf {
-	return &Conf{
-		Host: host,
-		User: user,
-		Pass: pass,
-	}
+func NewConf() interface{} {
+	return new(Conf)
+}
+
+//Exchange is of type CalendarService and is used to communicate with an Exchange server.
+type Exchange struct {
+	host     string
+	username string
+	password string
+	client   *http.Client
 }
 
 //New creates a new Exchange Calendar service for BusyBee for consumption.
@@ -60,10 +59,10 @@ func NewConf(host, user, pass string) *Conf {
 //* host - holds the host for the exchange service
 //* user - username to sign in to exchange with
 //* pass - password for the username to sign in to exchange
-func New(conf interface{}) (busybee.CalendarService, error) {
+func New(conf interface{}) (busybee.InEventer, error) {
 	exConf, ok := conf.(*Conf)
 	if !ok {
-		return nil, errors.New("Must use an ExchangeConf struct")
+		return nil, errors.New("Must use a configuration struct from the exchange service")
 	}
 	if exConf.Host == "" {
 		return nil, errors.New("Host is required to create an Exchange Calendar Service")
