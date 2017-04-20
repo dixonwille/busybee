@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var statusServiceFactories = make(map[string]StatusServiceFactory)
+var statusServices = make(map[string]*StatusService)
 
 //Status is an integer representing possable status.
 type Status int
@@ -19,43 +19,40 @@ const (
 	StatusAvailable
 )
 
-//StatusService is any service that can be used to update your status.
-type StatusService interface {
+//StatusService is the foundation for any service that can update the status of a user.
+type StatusService struct {
+	Create       StatusServiceCreator
+	CreateConfig ConfigCreator
+}
+
+//UpdateStatuser is any service that can be used to update your status.
+type UpdateStatuser interface {
 	UpdateStatus(uid string, status Status) error
 }
 
-//UserStatus is how an individual will call the Status Service.
-type UserStatus interface {
-	UpdateStatus(status Status) error
-}
-
-//StatusServiceFactory is a function that will create a new instance of a StatusService.
-type StatusServiceFactory func(interface{}) (StatusService, error)
+//StatusServiceCreator is a function that will create a new instance of a UpdateStatuser.
+type StatusServiceCreator func(interface{}) (UpdateStatuser, error)
 
 //RegisterStatusService registers a StatusService instance with BusyBee
-func RegisterStatusService(name string, factory StatusServiceFactory) error {
+func RegisterStatusService(name string, statusService *StatusService) error {
 	if name == "" {
-		return errors.New("Must supply a name to register a status service")
+		return errors.New("Must supply a name to register a Status Service")
 	}
-	if factory == nil {
-		return errors.New("Must supply a StatusServiceFactory to register")
+	if statusService == nil {
+		return errors.New("Must supply a Status Service to register")
 	}
-	if _, exists := statusServiceFactories[name]; exists {
-		return fmt.Errorf("%s is already registered as a StatusService", name)
+	if _, exists := statusServices[name]; exists {
+		return fmt.Errorf("%s is already registered as a Status Service", name)
 	}
-	statusServiceFactories[name] = factory
+	statusServices[name] = statusService
 	return nil
 }
 
-//CreateStatusService creates a new status service instance based on the supplied configuration values.
-//service must be supplied in conf so that it knows which registered service you want an instance of.
-func CreateStatusService(name string, conf interface{}) (StatusService, error) {
-	if conf == nil {
-		return nil, errors.New("Must supply a map for configuration values")
-	}
-	status, ok := statusServiceFactories[name]
+//GetStatusService returns an instance of a registered StatusService by name.
+func GetStatusService(name string) (*StatusService, error) {
+	status, ok := statusServices[name]
 	if !ok {
-		return nil, fmt.Errorf("Could not find %s in the list of registered status services", name)
+		return nil, fmt.Errorf("Could not find %s in the list of registered Status Services", name)
 	}
-	return status(conf)
+	return status, nil
 }

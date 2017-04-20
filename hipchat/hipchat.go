@@ -23,7 +23,10 @@ import (
 )
 
 func init() {
-	busybee.RegisterStatusService("hipchat", New)
+	hipchatService := new(busybee.StatusService)
+	hipchatService.Create = New
+	hipchatService.CreateConfig = NewConf
+	busybee.RegisterStatusService("hipchat", hipchatService)
 }
 
 //Hipchat is of type StatusService that can be used to get and update the status of a user.
@@ -39,19 +42,16 @@ type Conf struct {
 	Token string
 }
 
-//NewConf creates a new Hipchat configuration using the passed in values.
-func NewConf(host, token string) *Conf {
-	return &Conf{
-		Host:  host,
-		Token: token,
-	}
+//NewConf creates a new Hipchat configuration.
+func NewConf() interface{} {
+	return new(Conf)
 }
 
 //New returns a new instance of Hipchat.
-func New(conf interface{}) (busybee.StatusService, error) {
+func New(conf interface{}) (busybee.UpdateStatuser, error) {
 	hcConf, ok := conf.(*Conf)
 	if !ok {
-		return nil, errors.New("Must use a HipchatConf struct")
+		return nil, errors.New("Must use a configuration struct from the hipchat service")
 	}
 	if hcConf.Host == "" {
 		return nil, errors.New("Host is required to create a Hipchat Status Service")

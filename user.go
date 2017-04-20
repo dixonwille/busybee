@@ -4,12 +4,12 @@ package busybee
 type User struct {
 	CalendarUID   string
 	StatusUID     string
-	statusService StatusService
+	statusService UpdateStatuser
 	eventService  InEventer
 }
 
 //NewUser creates a new user link betweent the statuser and calendarer.
-func NewUser(calendarUID, statusUID string, statusService StatusService, eventService InEventer) *User {
+func NewUser(calendarUID, statusUID string, statusService UpdateStatuser, eventService InEventer) *User {
 	return &User{
 		CalendarUID:   calendarUID,
 		StatusUID:     statusUID,
