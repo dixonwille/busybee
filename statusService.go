@@ -56,3 +56,12 @@ func GetStatusService(name string) (*StatusService, error) {
 	}
 	return status, nil
 }
+
+//ListStatusService returns a slice of all registered status services.
+func ListStatusService() []string {
+	tmp := make([]string, 0, len(statusServices))
+	for k := range statusServices {
+		tmp = append(tmp, k)
+	}
+	return tmp
+}

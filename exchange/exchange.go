@@ -23,6 +23,7 @@ import (
 
 	ntlmssp "github.com/Azure/go-ntlmssp"
 	"github.com/dixonwille/busybee"
+	"github.com/dixonwille/busybee/util"
 )
 
 func init() {
@@ -36,7 +37,7 @@ func init() {
 type Conf struct {
 	Host string `quest:"What is the exchange host?,required"`
 	User string `quest:"What is your exchange username?,required"`
-	Pass string `quest:"What is your exchange password?,required,encrypted"`
+	Pass string `quest:"What is your exchange password?,required,encrypt,pass"`
 }
 
 //NewConf creates a new Exchange configuration using the passed in values.
@@ -64,22 +65,13 @@ func New(conf interface{}) (busybee.InEventer, error) {
 	if !ok {
 		return nil, errors.New("Must use a configuration struct from the exchange service")
 	}
-	if exConf.Host == "" {
-		return nil, errors.New("Host is required to create an Exchange Calendar Service")
-	}
-	if exConf.User == "" {
-		return nil, errors.New("User is required to create an Exchange Calendar Service")
-	}
-	if exConf.Pass == "" {
-		return nil, errors.New("Pass is required to create an Exchange Calendar Service")
-	}
 	client := &http.Client{
 		Transport: ntlmssp.Negotiator{
 			RoundTripper: &http.Transport{},
 		},
 	}
 	return &Exchange{
-		host:     exConf.Host,
+		host:     util.CleanHost(exConf.Host),
 		username: exConf.User,
 		password: exConf.Pass,
 		client:   client,

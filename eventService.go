@@ -44,3 +44,12 @@ func GetEventService(name string) (*EventService, error) {
 	}
 	return event, nil
 }
+
+//ListEventService returns a slice of all registered event services.
+func ListEventService() []string {
+	tmp := make([]string, 0, len(eventServices))
+	for k := range eventServices {
+		tmp = append(tmp, k)
+	}
+	return tmp
+}

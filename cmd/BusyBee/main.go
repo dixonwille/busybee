@@ -1,49 +1,29 @@
 package main
 
 import (
-	"flag"
+	"errors"
 	"fmt"
-
 	"log"
-
 	"os"
-
+	"reflect"
 	"strings"
 
+	"flag"
+
 	"github.com/dixonwille/busybee"
-	"github.com/dixonwille/busybee/exchange"
-	"github.com/dixonwille/busybee/hipchat"
+	_ "github.com/dixonwille/busybee/exchange"
+	_ "github.com/dixonwille/busybee/hipchat"
+	"github.com/dixonwille/busybee/util"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 var (
-	exUID   string
-	exHost  string
-	exUser  string
-	exPass  string
-	hcUID   string
-	hcHost  string
-	hcToken string
+	cfgFile string
 )
 
 func init() {
-	flag.StringVar(&exUID, "exUID", "", "The UID of the user for Exchange (usually an email address)")
-	flag.StringVar(&exHost, "exHost", "", "The host of the Exchange server")
-	flag.StringVar(&exUser, "exUser", "", "The user to sign in as when checking the Exchange server")
-	flag.StringVar(&exPass, "exPass", "", "The password of the user to sign in as when checkint the Exchange server")
-	flag.StringVar(&hcUID, "hcUID", "", "The UID of the user for Hipchat (usually @mention name)")
-	flag.StringVar(&hcHost, "hcHost", "", "The host of the hipchat server (uaually team.hipchat.com)")
-	flag.StringVar(&hcToken, "hcToken", "", "The token to use to validate calls")
+	flag.StringVar(&cfgFile, "cfg", "busybee.yaml", "Specify where to find the configuration file.")
 	flag.Parse()
-	wasErr := false
-	flag.VisitAll(func(f *flag.Flag) {
-		if f.Value.String() == "" {
-			log.Printf("%s must not be empty", f.Name)
-			wasErr = true
-		}
-	})
-	if wasErr {
-		os.Exit(1)
-	}
 }
 
 func main() {
@@ -52,7 +32,10 @@ func main() {
 		log.Fatalln(err)
 	}
 	status, err := createUpdateStatuser("hipchat")
-	user := busybee.NewUser(exUID, cleanMention(hcUID), status, event)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	user := busybee.NewUser("", "", status, event)
 	inEvent, err := user.InEvent()
 	if err != nil {
 		log.Fatalln(err)
@@ -74,16 +57,10 @@ func createInEventer(name string) (busybee.InEventer, error) {
 		return nil, err
 	}
 	serviceConf := eventService.CreateConfig()
-	//TODO make sure that this is where I load for configuration file.
-	//Should not need to convert the struct as I do not care.
-	exchangeConf, ok := serviceConf.(*exchange.Conf)
-	if !ok {
-		return nil, fmt.Errorf("Could not convert the configuration struct to a %s configuration struct", name)
+	if err = askQuestions(serviceConf, false); err != nil {
+		return nil, err
 	}
-	exchangeConf.Host = cleanHost(exHost)
-	exchangeConf.Pass = exPass
-	exchangeConf.User = exUser
-	return eventService.Create(exchangeConf)
+	return eventService.Create(serviceConf)
 }
 
 func createUpdateStatuser(name string) (busybee.UpdateStatuser, error) {
@@ -92,28 +69,81 @@ func createUpdateStatuser(name string) (busybee.UpdateStatuser, error) {
 		return nil, err
 	}
 	serviceConf := statusService.CreateConfig()
-	//TODO make sure that this is where I load for configuration file.
-	//Should not need to convert the struct as I do not care.
-	hipchatConf, ok := serviceConf.(*hipchat.Conf)
-	if !ok {
-		return nil, fmt.Errorf("Could not convert the configuration struct to a %s configuration struct", name)
+	if err = askQuestions(serviceConf, false); err != nil {
+		return nil, err
 	}
-	hipchatConf.Host = cleanHost(hcHost)
-	hipchatConf.Token = hcToken
-	return statusService.Create(hipchatConf)
+	return statusService.Create(serviceConf)
 }
 
-func cleanHost(host string) string {
-	if strings.Index(host, "http://") == 0 || strings.Index(host, "https://") == 0 {
-		return host
+func askQuestions(conf interface{}, askAll bool) error {
+	confV := reflect.ValueOf(conf)
+	if confV.Kind() != reflect.Ptr {
+		return errors.New("Configuration must be a pointer to a struct")
 	}
-	return "https://" + host
+	v := confV.Elem()
+	t := v.Type()
+	for i := 0; i < t.NumField(); i++ {
+		fv := v.Field(i)
+		ft := t.Field(i)
+		//Make sure it is not already populated
+		if (fv.Interface() == reflect.Zero(fv.Type()).Interface() || askAll) && ft.Tag.Get("quest") != "" {
+			args := strings.Split(ft.Tag.Get("quest"), ",")
+			if contains("encrypt", args) && fv.Kind() != reflect.String {
+				return fmt.Errorf("Struct: %s Type: %s must be of type string if you want it encrypted", t.Name(), ft.Name)
+			}
+			err := askAndUpdate(fv, args[0], contains("required", args), contains("encrypt", args), contains("pass", args))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
-func cleanMention(mention string) string {
-	mentionRunes := []rune(mention)
-	if mention[0] != '@' {
-		mentionRunes = append([]rune{rune('@')}, mentionRunes...)
+func contains(find string, in []string) bool {
+	for _, i := range in {
+		if i == find {
+			return true
+		}
 	}
-	return string(mentionRunes)
+	return false
+}
+
+func askAndUpdate(v reflect.Value, question string, required, encrypted, password bool) error {
+	oldState, err := terminal.MakeRaw(0)
+	if err != nil {
+		return err
+	}
+	defer terminal.Restore(0, oldState)
+	term := terminal.NewTerminal(os.Stdout, "")
+question:
+	for {
+		term.Write([]byte(util.CleanQuest(question)))
+		var res string
+		if password {
+			res, err = term.ReadPassword("")
+		} else {
+			res, err = term.ReadLine()
+		}
+		if err != nil {
+			return err
+		}
+		res = strings.Replace(res, "\r", "", -1)
+		res = strings.Replace(res, "\n", "", -1)
+		res = strings.Trim(res, " ")
+		if res == "" && required {
+			continue
+		}
+		if res == "" {
+			break
+		}
+		switch v.Kind() {
+		case reflect.String:
+			v.SetString(res) //Do something on encryption
+			break question
+		default:
+			fmt.Printf("Not sure how to convert string to type %s\n", v.Kind().String())
+		}
+	}
+	return nil
 }

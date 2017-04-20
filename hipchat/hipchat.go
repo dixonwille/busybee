@@ -20,6 +20,7 @@ import (
 	"bytes"
 
 	"github.com/dixonwille/busybee"
+	"github.com/dixonwille/busybee/util"
 )
 
 func init() {
@@ -39,7 +40,7 @@ type Hipchat struct {
 //Conf holds all the needed information to create a new hipchat service.
 type Conf struct {
 	Host  string `quest:"What is the hipchat host?,required"`
-	Token string `quest:"What is your hipchat token?,required"`
+	Token string `quest:"What is your hipchat token?,required,encrypt"`
 }
 
 //NewConf creates a new Hipchat configuration.
@@ -53,15 +54,9 @@ func New(conf interface{}) (busybee.UpdateStatuser, error) {
 	if !ok {
 		return nil, errors.New("Must use a configuration struct from the hipchat service")
 	}
-	if hcConf.Host == "" {
-		return nil, errors.New("Host is required to create a Hipchat Status Service")
-	}
-	if hcConf.Token == "" {
-		return nil, errors.New("Token is required to create a Hipchat Status Service")
-	}
 	client := new(http.Client)
 	hc := &Hipchat{
-		host:   hcConf.Host,
+		host:   util.CleanHost(hcConf.Host),
 		token:  hcConf.Token,
 		client: client,
 	}
@@ -121,8 +116,9 @@ func (h *Hipchat) UpdateStatus(uid string, status busybee.Status) error {
 }
 
 //GetUser gets the hipchat user with uid.
+//uid is the users @Mention name.
 func (h *Hipchat) GetUser(uid string) (*User, error) {
-	req, err := h.newRequest(http.MethodGet, fmt.Sprintf("/v2/user/%s", uid), nil)
+	req, err := h.newRequest(http.MethodGet, fmt.Sprintf("/v2/user/%s", util.CleanMention(uid)), nil)
 	if err != nil {
 		return nil, err
 	}
