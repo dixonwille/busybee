@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
 	"log"
 
@@ -46,17 +47,12 @@ func init() {
 }
 
 func main() {
-	exConf := exchange.NewConf(cleanHost(exHost), exUser, exPass)
-	hcConf := hipchat.NewConf(cleanHost(hcHost), hcToken)
-	calendar, err := busybee.CreateCalendarService("exchange", exConf)
+	event, err := createInEventer("exchange")
 	if err != nil {
 		log.Fatalln(err)
 	}
-	status, err := busybee.CreateStatusService("hipchat", hcConf)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	user := busybee.NewUser(exUID, cleanMention(hcUID), status, calendar)
+	status, err := createUpdateStatuser("hipchat")
+	user := busybee.NewUser(exUID, cleanMention(hcUID), status, event)
 	inEvent, err := user.InEvent()
 	if err != nil {
 		log.Fatalln(err)
@@ -71,6 +67,40 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
+func createInEventer(name string) (busybee.InEventer, error) {
+	eventService, err := busybee.GetEventService(name)
+	if err != nil {
+		return nil, err
+	}
+	serviceConf := eventService.CreateConfig()
+	//TODO make sure that this is where I load for configuration file.
+	//Should not need to convert the struct as I do not care.
+	exchangeConf, ok := serviceConf.(*exchange.Conf)
+	if !ok {
+		return nil, fmt.Errorf("Could not convert the configuration struct to a %s configuration struct", name)
+	}
+	exchangeConf.Host = cleanHost(exHost)
+	exchangeConf.Pass = exPass
+	exchangeConf.User = exUser
+	return eventService.Create(exchangeConf)
+}
+
+func createUpdateStatuser(name string) (busybee.UpdateStatuser, error) {
+	statusService, err := busybee.GetStatusService(name)
+	if err != nil {
+		return nil, err
+	}
+	serviceConf := statusService.CreateConfig()
+	//TODO make sure that this is where I load for configuration file.
+	//Should not need to convert the struct as I do not care.
+	hipchatConf, ok := serviceConf.(*hipchat.Conf)
+	if !ok {
+		return nil, fmt.Errorf("Could not convert the configuration struct to a %s configuration struct", name)
+	}
+	hipchatConf.Host = cleanHost(hcHost)
+	hipchatConf.Token = hcToken
+	return statusService.Create(hipchatConf)
 }
 
 func cleanHost(host string) string {
