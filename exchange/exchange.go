@@ -34,9 +34,9 @@ func init() {
 
 //Conf holds all the needed information to create a new exchange service.
 type Conf struct {
-	Host string
-	User string
-	Pass string
+	Host string `quest:"What is the exchange host?,required"`
+	User string `quest:"What is your exchange username?,required"`
+	Pass string `quest:"What is your exchange password?,required,encrypted"`
 }
 
 //NewConf creates a new Exchange configuration using the passed in values.

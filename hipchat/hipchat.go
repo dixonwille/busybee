@@ -38,8 +38,8 @@ type Hipchat struct {
 
 //Conf holds all the needed information to create a new hipchat service.
 type Conf struct {
-	Host  string
-	Token string
+	Host  string `quest:"What is the hipchat host?,required"`
+	Token string `quest:"What is your hipchat token?,required"`
 }
 
 //NewConf creates a new Hipchat configuration.
