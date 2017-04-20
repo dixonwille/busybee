@@ -27,10 +27,10 @@ func RegisterEventService(name string, event *EventService) error {
 		return errors.New("Must supply a name to register a calendar service")
 	}
 	if event == nil {
-		return errors.New("Must supply a CalendarServiceFactory to register")
+		return errors.New("Must supply a Event Service to register")
 	}
 	if _, exists := eventServices[name]; exists {
-		return fmt.Errorf("%s is already registered as a CalendarService", name)
+		return fmt.Errorf("%s is already registered as an Event Service", name)
 	}
 	eventServices[name] = event
 	return nil
@@ -40,7 +40,7 @@ func RegisterEventService(name string, event *EventService) error {
 func GetEventService(name string) (*EventService, error) {
 	event, ok := eventServices[name]
 	if !ok {
-		return nil, fmt.Errorf("Could not find %s in the list of registered calendar services", name)
+		return nil, fmt.Errorf("Could not find %s in the list of registered Event Services", name)
 	}
 	return event, nil
 }
