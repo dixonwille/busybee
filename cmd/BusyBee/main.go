@@ -11,11 +11,13 @@ import (
 
 	"log"
 
+	"bufio"
+
+	"github.com/bgentry/speakeasy"
 	"github.com/dixonwille/busybee"
 	_ "github.com/dixonwille/busybee/exchange"
 	_ "github.com/dixonwille/busybee/hipchat"
 	"github.com/dixonwille/busybee/util"
-	"golang.org/x/crypto/ssh/terminal"
 	"gopkg.in/yaml.v2"
 )
 
@@ -89,20 +91,16 @@ func contains(find string, in []string) bool {
 }
 
 func askAndUpdate(v reflect.Value, question string, encrypted, password bool) error {
-	oldState, err := terminal.MakeRaw(0)
-	if err != nil {
-		return err
-	}
-	defer terminal.Restore(0, oldState)
-	term := terminal.NewTerminal(os.Stdout, "")
 question:
 	for {
-		term.Write([]byte(util.CleanQuest(question)))
+		fmt.Print(util.CleanQuest(question))
 		var res string
+		var err error
 		if password {
-			res, err = term.ReadPassword("")
+			res, err = speakeasy.Ask("")
 		} else {
-			res, err = term.ReadLine()
+			reader := bufio.NewReader(os.Stdin)
+			res, err = reader.ReadString('\n')
 		}
 		if err != nil {
 			return err
