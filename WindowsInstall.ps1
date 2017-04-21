@@ -5,42 +5,10 @@ while(!(Test-Path $BBPath)){
     $BBPath = Read-Host -Prompt 'Location of BusyBee.exe (FullPath)'
 }
 
-while([string]::IsNullOrEmpty($ExHost)){
-    $ExHost = Read-Host -Prompt 'Exchange Host'
-}
-
-while([string]::IsNullOrEmpty($ExEmail)){
-    $ExEmail = Read-Host -Prompt 'Exchange Email'
-}
-
-while([string]::IsNullOrEmpty($ExUser)){
-    $ExUser = Read-Host -Prompt 'Exchange UserName'
-}
-
-while([string]::IsNullOrEmpty($ExPass)){
-    $ExPass = Read-Host -Prompt 'Exchange PassWord' -AsSecureString
-}
-
-while([string]::IsNullOrEmpty($HcHost)){
-    $HcHost = Read-Host -Prompt 'Hipchat Host'
-}
-
-while([string]::IsNullOrEmpty($HcMention)){
-    $HcMention = Read-Host -Prompt 'Hipchat Mention @'
-}
-
-while([string]::IsNullOrEmpty($HcToken)){
-    $HcToken = Read-Host -Prompt "Hipchat Token ( $HcHost/account/api )"
-}
-
-$RawPass = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($ExPass))
-
-$Args = "-exHost `"$ExHost`" -exUser `"$ExUser`" -exPass `"$RawPass`" -exUID `"$ExEmail`" -hcHost `"$HcHost`" -hcToken `"$HcToken`" -hcUID `"$HcMention`""
-
-$Test = (Start-Process -FilePath $BBPath -ArgumentList ($Args -split ' ') -WindowStyle Hidden -PassThru -Wait -RedirectStandardError 'blah.txt')
+$Test = (Start-Process -FilePath $BBPath -PassThru -Wait)
 
 if($Test.ExitCode -gt 0){
-    Write-Error 'Passed in Arguments did not allow BusyBee to execute properly. Please run install again.'
+    Write-Error 'Passed in Arguments did not allow BusyBee to execute properly. Please check the configuration file run install again.'
     exit
 }
 

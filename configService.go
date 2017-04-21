@@ -15,8 +15,8 @@ type ConfigCreator func() interface{}
 
 //MainConfig are configuration values that are not dependent on the the plugins installed.
 type MainConfig struct {
-	EventUID  string
-	StatusUID string
+	EventUID  string `quest:"What is the unique identifier for the Event Service?"`
+	StatusUID string `quest:"What is the unique identifier for the Status Service?"`
 	Plugins   map[string]PluginConfig
 }
 

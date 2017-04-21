@@ -39,8 +39,8 @@ type Hipchat struct {
 
 //Conf holds all the needed information to create a new hipchat service.
 type Conf struct {
-	Host  string `quest:"What is the hipchat host?,required"`
-	Token string `quest:"What is your hipchat token?,required,encrypt"`
+	Host  string `quest:"What is the hipchat host?"`
+	Token string `quest:"What is your hipchat token?,encrypt"`
 }
 
 //NewConf creates a new Hipchat configuration.
@@ -95,7 +95,7 @@ func (h *Hipchat) UpdateStatus(uid string, status busybee.Status) error {
 	if err != nil {
 		return err
 	}
-	req, err := h.newRequest(http.MethodPut, fmt.Sprintf("/v2/user/%s", uid), body)
+	req, err := h.newRequest(http.MethodPut, fmt.Sprintf("/v2/user/%s", util.CleanMention(uid)), body)
 	if err != nil {
 		return err
 	}

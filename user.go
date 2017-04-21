@@ -2,16 +2,16 @@ package busybee
 
 //User is the link between the calendar and status.
 type User struct {
-	CalendarUID   string
+	EventUID      string
 	StatusUID     string
 	statusService UpdateStatuser
 	eventService  InEventer
 }
 
 //NewUser creates a new user link betweent the statuser and calendarer.
-func NewUser(calendarUID, statusUID string, statusService UpdateStatuser, eventService InEventer) *User {
+func NewUser(eventUID, statusUID string, eventService InEventer, statusService UpdateStatuser) *User {
 	return &User{
-		CalendarUID:   calendarUID,
+		EventUID:      eventUID,
 		StatusUID:     statusUID,
 		statusService: statusService,
 		eventService:  eventService,
@@ -25,5 +25,5 @@ func (u *User) UpdateStatus(status Status) error {
 
 //InEvent returns true if the user is in an event and false otherwise.
 func (u *User) InEvent() (bool, error) {
-	return u.eventService.InEvent(u.CalendarUID)
+	return u.eventService.InEvent(u.EventUID)
 }

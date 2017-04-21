@@ -1,2 +1,3 @@
 *.secret
 dist/
+busybee.yml
