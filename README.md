@@ -19,18 +19,13 @@ Once files are moved, if you are on a Unix box (Mac or Linux) we need to make th
 ```bash
 cd ~/BusyBee #Assuming this is where you moved your files too
 chmod +x UnixInstall.sh
-chmod +x WindowsInstall.ps1
 ```
 
 > If you are on a Mac and try to double click the files you will get a warning. To bypass, navigate to this file in `Finder`, Control-Click the file, then from the shortcut menu, select `Open`. It will warn you one more time but with a different option now. Click `Open` again.
 
-Now run the install script for your machine (`UnixInstall.sh` or `WindowsInstall.ps1`). It will prompt you to answer a few questions.
+For Mac or Linux machines it should be as simple as running `UnixInstall.sh` and everything will be set up.
 
-> `Exchange UserName` is not your email address. It is the AD Auth username you use to sign in Exchange.
-
-> Do not include the `@` symbol in the `Hipchat Mention` prompt as it is a special character and may throw the script off.
-
-> `http://` and `https://` is not required as BusyBee will check. If it does not exist it uses `https://`.
+As for Windows you will need to run `BusyBee.exe` first and answer all the questions. Make sure that it did not fail after all prompts were answered. Then run `WindowsInstall.ps1` to install it to the Task Scheduler.
 
 ## Edit Task
 
