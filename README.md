@@ -40,7 +40,12 @@ There may be times when you need to update the task because something has change
 
 To edit the task, simply edit the configuration file and on next run BusyBee will use those values.
 
-If the value you are trying to edit is encrypted, remove that configuration value and rerun BusyBee. BusyBee will then prompt you for that value again and will encrypt it before saving it back to the file.
+If the value you are trying to edit is encrypted, you have two options:
+
+1. Remove it from the configuration file and then run BusyBee to reprompt for that field
+2. Run `./BusyBee_linux encrypt string` replacing string with the value you want to encrypt. Copy the output and paste it into the config
+
+> Using the latter, make sure you run your version of BusyBee.
 
 ## Uninstalling
 

@@ -26,15 +26,43 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	eventService, statusService, err := createServices(bb)
+	switch len(os.Args) {
+	case 1:
+		err = run(bb)
+	case 3:
+		if os.Args[1] != "encrypt" {
+			goto MainDefault
+		}
+		err = encrypt(os.Args[2], bb)
+		break
+	MainDefault:
+		fallthrough
+	default:
+		log.Fatalln("I am unsure of what you are asking of BusyBee")
+	}
 	if err != nil {
 		log.Fatalln(err)
+	}
+}
+
+func encrypt(msg string, bb *busybee.BusyBee) error {
+	out, err := bb.Encrypt(msg, "")
+	if err != nil {
+		return err
+	}
+	fmt.Println(out)
+	return nil
+}
+
+func run(bb *busybee.BusyBee) error {
+	eventService, statusService, err := createServices(bb)
+	if err != nil {
+		return err
 	}
 	user := bb.NewUser(eventService, statusService)
 	inEvent, err := user.InEvent()
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	curStatus := busybee.StatusUnknown
 	if inEvent {
@@ -44,8 +72,9 @@ func main() {
 	}
 	err = user.UpdateStatus(curStatus)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
+	return nil
 }
 
 func parseConfig(cfg string) (*busybee.BusyBee, error) {
@@ -86,7 +115,7 @@ func parseConfig(cfg string) (*busybee.BusyBee, error) {
 		log.Fatalln(err)
 	}
 	if !isValid {
-		log.Fatalln("It seems your private key may have been tampered with. If you are unsure please remove and run again. Expecting user only read and/or write.")
+		return nil, errors.New("It seems your private key may have been tampered with. If you are unsure please remove and run again. Expecting user only read and/or write")
 	}
 	var eventChanged bool
 	var statusChanged bool
