@@ -26,7 +26,7 @@ chmod +x UnixInstall.sh
 
 For Mac or Linux machines it should be as simple as running `UnixInstall.sh` and everything will be set up.
 
-As for Windows you will need to run `BusyBee.exe` first and answer all the questions. Make sure that it did not fail after all prompts were answered. Then run `WindowsInstall.ps1` to install it to the Task Scheduler.
+As for Windows you will need to run `BusyBee.exe` first and answer all the questions. Make sure that it did not fail after all prompts were answered. Then run `WindowsInstall.ps1` to install it to the Task Scheduler. You will have to log out then back in so that the schedular triggers the newly added task.
 
 ## Edit Task
 
