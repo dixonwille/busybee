@@ -9,7 +9,7 @@ if (Get-ScheduledTask -TaskName $TaskName -ErrorAction 'Ignore') {
     Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
 }
 
-$Action = New-ScheduledTaskAction -Execute $BBPath -Argument $Args
+$Action = New-ScheduledTaskAction -Execute $BBPath
 $Trigger = New-ScheduledTaskTrigger -AtLogOn -User $User
 $Settings = New-ScheduledTaskSettingsSet -Hidden -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RunOnlyIfNetworkAvailable
 $Task = New-ScheduledTask -Action $Action -Trigger $Trigger -Settings $Settings
