@@ -14,8 +14,6 @@ import (
 	"io/ioutil"
 
 	"encoding/base64"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 //Encrypt will encrypt the string and return an encrypted string using the public key specified by busybee.
@@ -88,7 +86,9 @@ func (bb *BusyBee) KeyValid() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	spew.Dump(info.Mode().Perm())
+	if info.Mode().Perm()&0177 > 0 {
+		return false, nil
+	}
 	return true, nil
 }
 

@@ -26,6 +26,13 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	isValid, err := bb.KeyValid()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if !isValid {
+		log.Fatalln("It seems your private key may have been tampered with. If you are unsure please remove and run again. Expecting user only read and/or write.")
+	}
 	eventService, statusService, err := createServices(bb)
 	if err != nil {
 		log.Fatalln(err)
