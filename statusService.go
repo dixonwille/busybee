@@ -21,8 +21,8 @@ const (
 
 //StatusService is the foundation for any service that can update the status of a user.
 type StatusService struct {
-	Create       StatusServiceCreator
-	CreateConfig ConfigCreator
+	Service
+	Create StatusServiceCreator
 }
 
 //UpdateStatuser is any service that can be used to update your status.
@@ -31,7 +31,7 @@ type UpdateStatuser interface {
 }
 
 //StatusServiceCreator is a function that will create a new instance of a UpdateStatuser.
-type StatusServiceCreator func(interface{}) (UpdateStatuser, error)
+type StatusServiceCreator func(interface{}, *BusyBee) (UpdateStatuser, error)
 
 //RegisterStatusService registers a StatusService instance with BusyBee
 func RegisterStatusService(name string, statusService *StatusService) error {
@@ -48,20 +48,29 @@ func RegisterStatusService(name string, statusService *StatusService) error {
 	return nil
 }
 
-//GetStatusService returns an instance of a registered StatusService by name.
-func GetStatusService(name string) (*StatusService, error) {
-	status, ok := statusServices[name]
-	if !ok {
-		return nil, fmt.Errorf("Could not find %s in the list of registered Status Services", name)
+//CreateStatusService returns an instance of a registered StatusService by name.
+func (bb *BusyBee) CreateStatusService(name string, conf interface{}) (UpdateStatuser, error) {
+	statusService, err := GetStatusService(name)
+	if err != nil {
+		return nil, err
 	}
-	return status, nil
+	return statusService.Create(conf, bb)
 }
 
 //ListStatusService returns a slice of all registered status services.
-func ListStatusService() []string {
+func (bb *BusyBee) ListStatusService() []string {
 	tmp := make([]string, 0, len(statusServices))
 	for k := range statusServices {
 		tmp = append(tmp, k)
 	}
 	return tmp
+}
+
+//GetStatusService will return the struct on how to create a new instance and a new config for that service.
+func GetStatusService(name string) (*StatusService, error) {
+	status, ok := statusServices[name]
+	if !ok {
+		return nil, fmt.Errorf("Could not find %s in the list of registered Event Services", name)
+	}
+	return status, nil
 }

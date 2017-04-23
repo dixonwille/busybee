@@ -51,6 +51,7 @@ type Exchange struct {
 	username string
 	password string
 	client   *http.Client
+	busybee  *busybee.BusyBee
 }
 
 //New creates a new Exchange Calendar service for BusyBee for consumption.
@@ -60,7 +61,7 @@ type Exchange struct {
 //* host - holds the host for the exchange service
 //* user - username to sign in to exchange with
 //* pass - password for the username to sign in to exchange
-func New(conf interface{}) (busybee.InEventer, error) {
+func New(conf interface{}, bb *busybee.BusyBee) (busybee.InEventer, error) {
 	exConf, ok := conf.(*Conf)
 	if !ok {
 		return nil, errors.New("Must use a configuration struct from the exchange service")
@@ -75,6 +76,7 @@ func New(conf interface{}) (busybee.InEventer, error) {
 		username: exConf.User,
 		password: exConf.Pass,
 		client:   client,
+		busybee:  bb,
 	}, nil
 }
 
@@ -135,7 +137,11 @@ func (e *Exchange) newRequest(method, path string, body io.Reader) (*http.Reques
 	if err != nil {
 		return nil, err
 	}
-	req.SetBasicAuth(e.username, e.password)
+	password, err := e.busybee.Decrypt(e.password, "")
+	if err != nil {
+		return nil, err
+	}
+	req.SetBasicAuth(e.username, password)
 	req.Header.Set("Content-Type", "text/xml; charset=utf-8")
 	return req, err
 }

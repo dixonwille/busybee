@@ -32,9 +32,10 @@ func init() {
 
 //Hipchat is of type StatusService that can be used to get and update the status of a user.
 type Hipchat struct {
-	host   string
-	token  string
-	client *http.Client
+	host    string
+	token   string
+	client  *http.Client
+	busybee *busybee.BusyBee
 }
 
 //Conf holds all the needed information to create a new hipchat service.
@@ -49,16 +50,17 @@ func NewConf() interface{} {
 }
 
 //New returns a new instance of Hipchat.
-func New(conf interface{}) (busybee.UpdateStatuser, error) {
+func New(conf interface{}, bb *busybee.BusyBee) (busybee.UpdateStatuser, error) {
 	hcConf, ok := conf.(*Conf)
 	if !ok {
 		return nil, errors.New("Must use a configuration struct from the hipchat service")
 	}
 	client := new(http.Client)
 	hc := &Hipchat{
-		host:   util.CleanHost(hcConf.Host),
-		token:  hcConf.Token,
-		client: client,
+		host:    util.CleanHost(hcConf.Host),
+		token:   hcConf.Token,
+		client:  client,
+		busybee: bb,
 	}
 	return hc, hc.valid()
 }
@@ -78,6 +80,10 @@ func (h *Hipchat) UpdateStatus(uid string, status busybee.Status) error {
 		return err
 	}
 	strStatus := convertStatus(status)
+	//User is offline don't show them as online
+	if user.Presence == nil {
+		return nil
+	}
 	curStatus := strings.ToLower(user.Presence.Show)
 	switch {
 	case curStatus == strStatus:
@@ -175,7 +181,11 @@ func (h *Hipchat) newRequest(method, path string, body io.Reader) (*http.Request
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", h.token))
+	token, err := h.busybee.Decrypt(h.token, "")
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 	return req, nil
 }
 
