@@ -18,6 +18,7 @@ Once files are moved, if you are on a Unix box (Mac or Linux) we need to make th
 
 ```bash
 cd ~/BusyBee #Assuming this is where you moved your files too
+chmod +x BusyBee_linux #Or BusyBee_mac
 chmod +x UnixInstall.sh
 ```
 
