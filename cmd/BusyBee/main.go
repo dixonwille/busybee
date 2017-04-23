@@ -139,10 +139,18 @@ ParsePlugins:
 	}
 	if eventServiceName == "" {
 		var name string
-		err = askAndUpdate(reflect.ValueOf(&name).Elem(), "Which Event Service plugin would you like to use?", false, false, bb)
-		if err != nil {
-			return nil, err
+		services := bb.ListEventService()
+		if len(services) == 1 {
+			name = services[0]
+		} else {
+			joined := strings.Join(services, ", ")
+			fmt.Printf("Event Services: %s\n", joined)
+			err = askAndUpdate(reflect.ValueOf(&name).Elem(), "Which Event Service plugin would you like to use?", false, false, bb)
+			if err != nil {
+				return nil, err
+			}
 		}
+
 		if bb.Plugins == nil {
 			bb.Plugins = make(map[string]busybee.PluginConfig)
 		}
@@ -153,9 +161,16 @@ ParsePlugins:
 	}
 	if statusServiceName == "" {
 		var name string
-		err = askAndUpdate(reflect.ValueOf(&name).Elem(), "Which Status Service plugin would you like to use?", false, false, bb)
-		if err != nil {
-			return nil, err
+		services := bb.ListStatusService()
+		if len(services) == 1 {
+			name = services[0]
+		} else {
+			joined := strings.Join(services, ", ")
+			fmt.Printf("Status Services: %s\n", joined)
+			err = askAndUpdate(reflect.ValueOf(&name).Elem(), "Which Status Service plugin would you like to use?", false, false, bb)
+			if err != nil {
+				return nil, err
+			}
 		}
 		if bb.Plugins == nil {
 			bb.Plugins = make(map[string]busybee.PluginConfig)

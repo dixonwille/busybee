@@ -1,3 +1,4 @@
 *.secret
 dist/
 busybee.yml
+busybee.pem
