@@ -49,7 +49,7 @@ If the value you are trying to edit is encrypted, you have two options:
 
 ## Uninstalling
 
-If you want to uninstall or upgrade to a new version of BusyBee follow the steps bellow depending on you operating system to remove BusyBee. It is recommended to Uninstall everytime you want to upgrade for right now.
+If you want to uninstall or upgrade to a new version of BusyBee follow the steps bellow depending on you operating system to remove BusyBee. It is recommended to Uninstall everytime you want to upgrade for right now. After you uninstall using one of the methods below, make sure to remove the executable and the install script that was downloaded.
 
 ### Unix (Mac or Linux)
 
