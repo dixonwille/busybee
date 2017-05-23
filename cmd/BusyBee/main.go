@@ -64,7 +64,7 @@ func run(bb *busybee.BusyBee) error {
 	if err != nil {
 		return err
 	}
-	curStatus := busybee.StatusUnknown
+	var curStatus busybee.Status
 	if inEvent {
 		curStatus = busybee.StatusBusy
 	} else {
@@ -131,12 +131,14 @@ ParsePlugins:
 				break
 			}
 			eventServiceName = name
-			eventService, err := busybee.GetEventService(name)
+			var eventService *busybee.EventService
+			eventService, err = busybee.GetEventService(name)
 			if err != nil {
 				return nil, err
 			}
 			eventConf = eventService.CreateConfig()
-			eConfMarsh, err := yaml.Marshal(c.Config)
+			var eConfMarsh []byte
+			eConfMarsh, err = yaml.Marshal(c.Config)
 			if err != nil {
 				return nil, err
 			}
@@ -153,12 +155,14 @@ ParsePlugins:
 				break
 			}
 			statusServiceName = name
-			statusService, err := busybee.GetStatusService(name)
+			var statusService *busybee.StatusService
+			statusService, err = busybee.GetStatusService(name)
 			if err != nil {
 				return nil, err
 			}
 			statusConf = statusService.CreateConfig()
-			sConfMarsh, err := yaml.Marshal(c.Config)
+			var sConfMarsh []byte
+			sConfMarsh, err = yaml.Marshal(c.Config)
 			if err != nil {
 				return nil, err
 			}
