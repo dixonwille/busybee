@@ -1,6 +1,7 @@
 # BusyBee 
 
 [![GitHub release](https://img.shields.io/github/release/dixonwille/busybee.svg)](https://github.com/dixonwille/busybee/releases/latest) [![Build Status](https://travis-ci.org/dixonwille/busybee.svg?branch=master)](https://travis-ci.org/dixonwille/busybee) [![GoDoc](https://godoc.org/github.com/dixonwille/busybee?status.svg)](https://godoc.org/github.com/dixonwille/busybee)
+[![Open Source Helpers](https://www.codetriage.com/dixonwille/busybee/badges/users.svg)](https://www.codetriage.com/dixonwille/busybee)
 
 > **WINDOWS NOT RECOMMENDED** I am having trouble finding a reliable way to run a task every 5 minutes without annoying the user with a popup each time. If a solution is found and working please let me know!
 
